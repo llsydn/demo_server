@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<link href="https://cdn.bootcss.com/twitter-bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/twitter-bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="https://cdn.bootcss.com/layer/2.3/layer.js"></script>
+<style type="text/css">
+    .dragAble {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        cursor: pointer;
+    }
+</style>
+<body class="gray-bg">
+<div class="wrapper wrapper-content ">
+    <div class="col-sm-12">
+        <div class="ibox">
+            <div class="ibox-body">
+                <div class="fixed-table-toolbar">
+                    <div class="row clearfix">
+                        <div class="progress" style="margin: 0 4px;margin: 0 4px;width:100%;height:20px;">
+                            <div id="progress" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" style="width: 0%;">
+                            </div>
+                        </div>
+                        <img class="dragAble" id="dragAbleImg" onclick="mapImageOnClick(event)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var currentName; //当前显示的行政区名称
+    var currentIndex;//当前显示的index
+    //点击行政区事件
+    function mapImageOnClick(e) {
+        e = e || window.event;
+        var imgId = '#' + $(e.target).attr('id');
+        var currentWidth = $(imgId).width();
+        var currentHeight = $(imgId).height();
+        var offsetX = e.pageX - $(imgId).offset().left;
+        var offsetY = e.pageY - $(imgId).offset().top;
+        var x = offsetX / currentWidth;
+        var y = offsetY / currentHeight;
+        var districtName = getDistrictByCoordinate(x, y);
+        if (districtName != null && districtName != '' && currentName != districtName) {
+            currentName = districtName;
+            //加载当前行政区的所有地名故事
+			alert(currentName);
+        } else if (districtName == null || districtName == '') {
+            //是否要关闭当前地名故事列表
+            //currentName = '';
+            //layer.close(currentIndex);
+        }
+    }
+
+	//根据坐标点获取所在的行政区
+	function getDistrictByCoordinate(x, y) {
+		var arrData = getComboValues("districtCoordinate");
+		var districtName;
+		$.each(arrData, function (i, item) {
+			if (item == null) {
+				return true;
+			}
+			var name = item[0];
+			var xRange = item[1];
+			var yRange = item[2];
+			//判断是否在这个范围内
+			var xRange1 = parseFloat(xRange.split('-')[0]);
+			var xRange2 = parseFloat(xRange.split('-')[1]);
+			var yRange1 = parseFloat(yRange.split('-')[0]);
+			var yRange2 = parseFloat(yRange.split('-')[1]);
+			if (x >= xRange1 && x < xRange2 && y > yRange1 && y < yRange2) {
+				districtName = name;
+				return false;
+			}
+		});
+		return districtName;
+	}
+
+	function getComboValues(type) {
+		var values = [];
+		if ('districtCoordinate' == type) {
+			values = [
+				['石岐街道', '0.47-0.51', '0.47-0.49']
+				, ['东区街道', '0.52-0.55', '0.49-0.52']
+				, ['西区街道', '0.41-0.45', '0.49-0.52']
+				, ['南区街道', '0.42-0.46', '0.53-0.56']
+				, ['五桂山街道', '0.48-0.53', '0.58-0.61']
+				, ['中山港街道', '0.62-0.67', '0.44-0.47']
+				, ['黄圃镇', '0.39-0.42', '0.24-0.27']
+				, ['南头镇', '0.31-0.35', '0.24-0.26']
+				, ['东凤镇', '0.25-0.28', '0.26-0.28']
+				, ['阜沙镇', '0.40-0.44', '0.30-0.33']
+				, ['小榄镇', '0.24-0.28', '0.30-0.32']
+				, ['东升镇', '0.31-0.35', '0.36-0.39']
+				, ['古镇镇', '0.14-0.18', '0.37-0.40']
+				, ['横栏镇', '0.23-0.27', '0.47-0.50']
+				, ['三角镇', '0.51-0.55', '0.29-0.32']
+				, ['民众镇', '0.64-0.68', '0.36-0.39']
+				, ['南朗镇', '0.71-0.75', '0.52-0.54']
+				, ['港口镇', '0.47-0.51', '0.41-0.43']
+				, ['大涌镇', '0.32-0.36', '0.56-0.59']
+				, ['沙溪镇', '0.36-0.39', '0.50-0.53']
+				, ['三乡镇', '0.56-0.60', '0.70-0.72']
+				, ['板芙镇', '0.35-0.39', '0.62-0.65']
+				, ['神湾镇', '0.42-0.46', '0.77-0.79']
+				, ['坦洲镇', '0.61-0.64', '0.83-0.86']
+			];
+		}
+		return values;
+	};
+
+</script>
+
+<script type="text/javascript">
+    //使用ajax加载图片
+    var imageStatus = true;
+    var xhr = createXHR();
+    //加载完成回调
+    xhr.onload = function (event) {
+        if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+            //显示图片
+            setTimeout(function () {
+                if (imageStatus) {
+                    $('.dragAble').attr('src', url);
+                }
+            }, 1000);
+            //隐藏进度条
+            setTimeout(function () {
+                $('.progress').hide();
+            }, 3000);
+        } else {
+            layer.msg("图片加载失败");
+        }
+    }
+    //加载进度条
+    xhr.onprogress = function (event) {
+        if (event.lengthComputable) {
+            var percent = parseInt(event.loaded / event.total * 100) + "%";
+            $('#progress').width(percent);
+            $('#progress').text("当前加载进度：" + percent);
+        } else {
+            imageStatus = false;
+            layer.msg("区划图加载失败");
+        }
+    }
+
+    //创建ajax对象
+    function createXHR() {
+        var xhr = null;
+        try {
+            // Firefox, Opera 8.0+, Safari，IE7+
+            xhr = new XMLHttpRequest();
+        }
+        catch (e) {
+            // Internet Explorer
+            try {
+                xhr = new ActiveXObject("Msxml2.XMLHTTP");
+            }
+            catch (e) {
+                try {
+                    xhr = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                catch (e) {
+                    xhr = null;
+                }
+            }
+        }
+        return xhr;
+    }
+
+    //图片路径并发起get请求
+    url = '/demo/20160309.jpg'
+    xhr.open('get', url, true);
+    xhr.send(null);
+</script>
+
+<script type="text/javascript">
+    //放大缩小
+    window.onload = function () {
+        var oImg = document.getElementsByTagName("img")[0];
+
+        function fnWheel(obj, fncc) {
+            obj.onmousewheel = fn;
+            if (obj.addEventListener) {
+                obj.addEventListener('DOMMouseScroll', fn, false);
+            }
+
+            function fn(ev) {
+                var oEvent = ev || window.event;
+                var down = true;
+
+                if (oEvent.detail) {
+                    down = oEvent.detail > 0
+                } else {
+                    down = oEvent.wheelDelta < 0
+                }
+
+                if (fncc) {
+                    fncc.call(this, down, oEvent);
+                }
+
+                if (oEvent.preventDefault) {
+                    oEvent.preventDefault();
+                }
+
+                return false;
+            }
+        };
+        fnWheel(oImg, function (down, oEvent) {
+            var oldWidth = this.offsetWidth;
+            var oldHeight = this.offsetHeight;
+            var oldLeft = this.offsetLeft;
+            var oldTop = this.offsetTop;
+
+            var scaleX = (oEvent.clientX - oldLeft) / oldWidth; //比例
+            var scaleY = (oEvent.clientY - oldTop) / oldHeight;
+
+            if (down) {
+                this.style.width = this.offsetWidth * 0.9 + "px";
+                this.style.height = this.offsetHeight * 0.9 + "px";
+            } else {
+                this.style.width = this.offsetWidth * 1.1 + "px";
+                this.style.height = this.offsetHeight * 1.1 + "px";
+            }
+            var newWidth = this.offsetWidth;
+            var newHeight = this.offsetHeight;
+            this.style.left = oldLeft - scaleX * (newWidth - oldWidth) + "px";
+            this.style.top = oldTop - scaleY * (newHeight - oldHeight) + "px";
+        });
+    }
+
+    //拖拽
+    var ie = document.all;
+    var nn6 = document.getElementByIdx && !document.all;
+    var isdrag = false;
+    var y, x;
+    var oDragObj;
+
+    function moveMouse(e) {
+        if (isdrag) {
+            oDragObj.style.top = (nn6 ? nTY + e.clientY - y : nTY + event.clientY - y) + "px";
+            oDragObj.style.left = (nn6 ? nTX + e.clientX - x : nTX + event.clientX - x) + "px";
+            return false;
+        }
+    }
+
+    function initDrag(e) {
+        var oDragHandle = nn6 ? e.target : event.srcElement;
+        var topElement = "HTML";
+        while (oDragHandle.tagName != topElement && oDragHandle.className != "dragAble") {
+            oDragHandle = nn6 ? oDragHandle.parentNode : oDragHandle.parentElement;
+        }
+        if (oDragHandle.className == "dragAble") {
+            isdrag = true;
+            oDragObj = oDragHandle;
+            nTY = parseInt(oDragObj.style.top + 0);
+            y = nn6 ? e.clientY : event.clientY;
+            nTX = parseInt(oDragObj.style.left + 0);
+            x = nn6 ? e.clientX : event.clientX;
+            document.onmousemove = moveMouse;
+            return false;
+        }
+    }
+
+    document.onmousedown = initDrag;
+    document.onmouseup = new Function("isdrag=false");
+
+</script>
+</body>
+</html>
