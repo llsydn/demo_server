@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DemoServerApplication {
 
     public static void main(String[] args) {
-        System.out.println("项目启动成功");
+        System.out.println("demoServer项目启动成功");
         SpringApplication.run(DemoServerApplication.class, args);
     }
 }
